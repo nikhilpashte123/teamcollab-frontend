@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { register } from '../services/AuthService';
+
 
 const UserIcon = () => (
     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -52,17 +54,38 @@ export function Register() {
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [agreeTerms, setAgreeTerms] = useState(false);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
+
         if (formData.password !== formData.confirmPassword) {
             alert("Passwords don't match!");
             return;
         }
-        // Add your registration logic here
-        console.log("Register:", formData);
-        // After successful registration, navigate to dashboard
-        navigate("/");
+
+        if (!agreeTerms) {
+            alert("You must agree to the terms!");
+            return;
+        }
+
+        try {
+            // Call your Laravel API via service
+            const res = await register({
+                name: formData.name,
+                email: formData.email,
+                password: formData.password,
+                password_confirmation: formData.confirmPassword
+            });
+
+            alert(res.message || "Registered successfully!");
+            // Redirect to login or dashboard after successful registration
+            navigate("/dashboard"); // or "/dashboard" if auto-login
+
+        } catch (err) {
+            console.error(err);
+            alert(err.message || "Registration failed. Try again.");
+        }
     };
+
 
     const handleGoogleSignup = () => {
         // Add Google OAuth logic here
